@@ -1,0 +1,13 @@
+{
+  "name": "d04-api-toolkit",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Small HTTP API helpers for Node.js: JSON responses, request parsing, CORS, and routing.",
+  "exports": "./src/index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
