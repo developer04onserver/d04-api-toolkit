@@ -1,0 +1,2 @@
+import test from "node:test"; import assert from "node:assert/strict"; import { createRouter, json } from "../src/index.js";
+test("routes a health request",async()=>{const router=createRouter();router.get("/health",(_req,res)=>json(res,200,{status:"ok"}));const req={method:"GET",url:"/health"};const res={writeHead(status){this.status=status;},end(body){this.body=body;}};await router.handle(req,res);assert.equal(res.status,200);assert.equal(JSON.parse(res.body).status,"ok");});
