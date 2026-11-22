@@ -1,71 +1,39 @@
+<p align="center"><img src="assets/hero.svg" alt="D04 API Toolkit animated SVG banner" width="100%"></p>
+
 # d04-api-toolkit
 
-<div align="center">
-
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=20&duration=2800&pause=900&color=58D8FF&center=true&vCenter=true&width=620&lines=Small+tools.+Clear+interfaces.;Dependency-free+API+helpers;Built+for+modern+JavaScript+runtimes" alt="Animated project tagline">
-
-`[ API ENGINEERING ]`  /  `[ JAVASCRIPT ]`  /  `[ ZERO DEPENDENCIES ]`
-
-</div>
-
----
-
-## Overview
-
-A compact collection of reusable HTTP helpers for Node.js and modern Fetch-compatible runtimes. The module provides JSON responses, bounded JSON request parsing, CORS response wrapping, and a small route dispatcher.
+A compact set of practical HTTP primitives for Node.js services: JSON responses, bounded request-body parsing, CORS handling, and lightweight routing.
 
 ## Features
+- JSON response helper with custom headers
+- Streaming JSON body reader with a size limit
+- CORS wrapper with preflight handling
+- Minimal method/path router
+- Node.js 20+ ES modules; no runtime dependencies
 
-- JSON response helper with configurable status and headers
-- Request JSON parsing with a configurable content-length guard
-- CORS header helper
-- Minimal method-and-path router
-- No third-party runtime dependencies
-
-## Project layout
-
-```text
-d04-api-toolkit/
-|-- src/
-|   |-- index.js
-|-- README.md
-```
-
-## Quick start
-
-Requires a modern JavaScript runtime with the Fetch API.
-
+## Usage
 ```js
-import { json, createRouter } from "./src/index.js";
+import { createApiServer, createRouter, json, readJson } from "d04-api-toolkit";
 
-const app = createRouter({
-  "GET /health": () => json({ status: "ok" }),
-});
-
-const response = await app(new Request("https://example.test/health"));
-console.log(await response.json());
+const router = createRouter();
+router.get("/health", (_req, res) => json(res, 200, { status: "ok" }));
+router.post("/echo", async (req, res) => json(res, 200, await readJson(req)));
+createApiServer(router, { cors: { origin: "https://app.example.com" } }).listen(8787);
 ```
 
-## API
-
+## Exports
 | Export | Purpose |
-|---|---|
-| `json(data, status, headers)` | Build a JSON Response |
-| `readJson(request, options)` | Parse JSON with a size guard |
-| `withCors(response, origin)` | Add CORS headers |
-| `createRouter(routes)` | Create a method-and-path dispatcher |
+| --- | --- |
+| `json(res, status, data, headers)` | Send a JSON response |
+| `readJson(req, options)` | Read and parse bounded JSON |
+| `withCors(handler, options)` | Add CORS and OPTIONS handling |
+| `createRouter()` | Register and dispatch routes |
+| `createApiServer(router, options)` | Create a Node HTTP server |
 
 ## Development
-
 ```bash
-node --version
-node --input-type=module
+npm test
 ```
 
-## Security notes
-
-The content-length check is an early guard, not a substitute for streaming body limits. Validate untrusted input at the application boundary, configure allowed origins explicitly, and avoid returning internal exception details in production.
-
 ## License
-
 MIT
