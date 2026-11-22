@@ -2,38 +2,53 @@
 
 # d04-api-toolkit
 
-A compact set of practical HTTP primitives for Node.js services: JSON responses, bounded request-body parsing, CORS handling, and lightweight routing.
+A small, dependency-free collection of Web API utilities designed for Cloudflare Workers and modern JavaScript runtimes.
 
 ## Features
-- JSON response helper with custom headers
-- Streaming JSON body reader with a size limit
-- CORS wrapper with preflight handling
-- Minimal method/path router
-- Node.js 20+ ES modules; no runtime dependencies
+- JSON response helper with configurable status and headers
+- JSON request parsing with a content-length guard
+- CORS response wrapper
+- Exact-path and wildcard route dispatch
+- Promise-based handlers and consistent error responses
+- No runtime dependencies
 
-## Usage
+## Quick start
+
 ```js
-import { createApiServer, createRouter, json, readJson } from "d04-api-toolkit";
+import { createRouter, json, withCors } from "d04-api-toolkit";
 
-const router = createRouter();
-router.get("/health", (_req, res) => json(res, 200, { status: "ok" }));
-router.post("/echo", async (req, res) => json(res, 200, await readJson(req)));
-createApiServer(router, { cors: { origin: "https://app.example.com" } }).listen(8787);
+const app = createRouter({
+  "GET /health": () => json({ status: "ok" }),
+  "GET /hello": ({ url }) => json({ message: "Hello " + (url.searchParams.get("name") ?? "world") })
+});
+
+export default {
+  async fetch(request, env, context) {
+    const response = await app(request, { env, context });
+    return withCors(response, "https://app.example.com");
+  }
+};
 ```
 
-## Exports
+## API
+
 | Export | Purpose |
 | --- | --- |
-| `json(res, status, data, headers)` | Send a JSON response |
-| `readJson(req, options)` | Read and parse bounded JSON |
-| `withCors(handler, options)` | Add CORS and OPTIONS handling |
-| `createRouter()` | Register and dispatch routes |
-| `createApiServer(router, options)` | Create a Node HTTP server |
+| `json(data, status, headers)` | Create a JSON Response |
+| `readJson(request, options)` | Parse JSON with a size guard |
+| `withCors(response, origin)` | Add CORS headers to a Response |
+| `createRouter(routes)` | Create a fetch handler from route mappings |
 
-## Development
+Route keys use the format `METHOD /path`. A wildcard method can be used as `* /path`.
+
+## Local development
+
+Requires Node.js 20+ for the built-in Fetch API.
+
 ```bash
 npm test
 ```
 
 ## License
+
 MIT
